@@ -7,14 +7,27 @@ import { ThemedView } from "@/components/ThemedView";
 import { useTransferExampleTx } from "@/hooks/transfer/useTransferExampleTx";
 import { useDriftClient } from "@/contexts/DriftClientProvider";
 import { useInitializeAccount } from "@/hooks/account/useInitializeAccount";
+import { useInitializeWsolAccount } from "@/hooks/account/useInitializeWsolAccount";
 
 export default function HomeScreen() {
   const transferExample = useTransferExampleTx();
   const { driftClient } = useDriftClient();
+  const initializeWsolAccount = useInitializeWsolAccount();
   const initializeAccount = useInitializeAccount();
 
   const onBuildSampleTx = () => {
     transferExample
+      .mutateAsync()
+      .then((signature) =>
+        Linking.openURL(
+          `https://explorer.solana.com/tx/${signature}?cluster=devnet`
+        )
+      )
+      .then(() => Alert.alert("Executed wSOL ata init"));
+  };
+
+  const onInitializeWsolAccount = () => {
+    initializeWsolAccount
       .mutateAsync()
       .then((signature) =>
         Linking.openURL(
@@ -28,11 +41,13 @@ export default function HomeScreen() {
     if (driftClient._isSubscribed) {
       return Alert.alert("Already subscribed");
     }
-    driftClient.subscribe().then((res) => Alert.alert(`Subscribed: ${res}`));
-    // .catch((err: Error) => {
-    //   console.log("Unable to subscribe", err);
-    //   Alert.alert("Unable to subscribe", err.message);
-    // });
+    driftClient
+      .subscribe()
+      .then((res) => Alert.alert(`Subscribed: ${res}`))
+      .catch((err: Error) => {
+        console.log("Unable to subscribe", err);
+        Alert.alert("Unable to subscribe", err.message);
+      });
   };
 
   return (
@@ -53,7 +68,11 @@ export default function HomeScreen() {
         <Button title="Execute burn tx" onPress={onBuildSampleTx} />
         <Button title="Drift subscribe" onPress={onSubscribe} />
         <Button
-          title="Initial with deposit"
+          title="Initialize wSol account"
+          onPress={onInitializeWsolAccount}
+        />
+        <Button
+          title="Initialize with deposit"
           onPress={() => initializeAccount.mutateAsync()}
         />
       </ThemedView>

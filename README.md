@@ -1,15 +1,6 @@
 # Drift expo app
 
-Until polyfill of Node standard libraries is fixed, please use disk reference to Drift SDK, due to manual editing is required to dependencies to make sdk compatible to React native.
-
-```json
-{
-   "dependencies": {
-      "@drift-labs/sdk": "file:/Users/USER_NAME/drift/protocol-v2/sdk",
-   }
-}
-```
-
+Barebone example to load `@drift-labs/sdk` into a React native project (Expo)
 ## Running app
 
 Install dependencies and start expo
@@ -21,21 +12,20 @@ yarn && yarn start
 
 ## Dependencies using Node standard libraries
 
-References to node standard library modules will case issue during build time. As a short term workaround, you will need to comment out implementation uses these stand libraries.
+References to node standard library modules will case issue during build time. It can be fixed via packages mapping along with `npm:` prefix
 
-(Most of the time is related to loading keypair via disk file, reference to process env or crypto library)
+You can find compatiable node standard libraries for browser [here](https://github.com/parshap/node-libs-react-native)
 
-Any package installation will require comment out these implementations again.
+### Polyfill through npm packages
 
-### Fs
+Following example will allow 
+```json
+{
+   "process": "npm:shtylman/node-process",
+   "os": "npm:os-browserify",
+   "path": "npm:path-browserify",
+}
+```
+## Issue with unable to subscribe to Account via Drift client
 
-- `node_modules/@drift-labs/sdk/node_modules/@project-serum/anchor/dist/cjs/workspace.js`
-
-### Process
-
-- `node_modules/@drift-labs/sdk/node_modules/@project-serum/anchor/dist/cjs/provider.js`
-- `node_modules/@drift-labs/sdk/node_modules/@openbook-dex/openbook-v2/node_modules/@coral-xyz/anchor/dist/cjs/nodewallet.js`
-
-### Crypto
-
-- `node_modules/@solana/spl-type-length-value/lib/cjs/splDiscriminate.js`
+Caused by how `@solana/web3.js` decide to use `Buffer` class to create the RPC response, which is a method that is missing in React native, here is the [solution](https://github.com/coral-xyz/anchor/issues/3041)
